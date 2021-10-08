@@ -163,10 +163,9 @@ int main()
     int num_ini = 0;
     int num_desej = 0;
 
-    std::cout << "O que deseja? 0- Sair\n 1-existe\n 2-contar\n 3-procurar_valor\n 4-procurar_valor_apos\n 5-procurar_menor\n 6-procurar_maior\n 7-procurar_menor_pos\n 8-procurar_menor_pos_apos\n 9-procurar_melhor_se\n 10-calcular_stress_medio 11-mais_homens_ou_mulheres\n 12-qual_metade_eh_mais_estressada\n 13- homens_sao_mais_estressados_que_mulheres\n" << "\n";
-    std::cin >> op;
-
     while(op != 0){
+        std::cout << "O que deseja? 0- Sair\n 1-existe\n 2-contar\n 3-procurar_valor\n 4-procurar_valor_apos\n 5-procurar_menor\n 6-procurar_maior\n 7-procurar_menor_pos\n 8-procurar_menor_pos_apos\n 9-procurar_melhor_se\n 10-calcular_stress_medio 11-mais_homens_ou_mulheres\n 12-qual_metade_eh_mais_estressada\n 13- homens_sao_mais_estressados_que_mulheres\n" << "\n";
+        std::cin >> op;
         if (op == 0) break;
         if (op == 1){
             std::cout << "Digite o numero desejado: ";
