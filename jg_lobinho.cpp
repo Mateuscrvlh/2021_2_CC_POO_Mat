@@ -11,6 +11,7 @@ struct Entity {
     int y { 0 };
     int step { 0 };
     sf::Sprite sprite;
+    sf::Sprite sprite2;
 
     Entity(int x, int y, int step, sf::Texture& texture):
         x {x}, y {y}, step {step}, sprite(texture) {
@@ -19,6 +20,9 @@ struct Entity {
     void draw(sf::RenderWindow& window) {
         this->sprite.setPosition(x * step, y * step);
         setSize(this->sprite, step, step);
+        if ( sprite.getGlobalBounds().intersects( sprite2.getGlobalBounds())){
+            std::cout << "collision";
+        }
         window.draw(this->sprite);
     }
 };
@@ -85,8 +89,7 @@ int main()
                 window.close();
             } else if (event.type == sf::Event::KeyPressed) {
                moveEntity(event.key.code, wolf, {sf::Keyboard::Left, sf::Keyboard::Up, sf::Keyboard::Right, sf::Keyboard::Down});
-               moveEntity(event.key.code, rabbit, {sf::Keyboard::A, sf::Keyboard::W, sf::Keyboard::D, sf::Keyboard::S
-               });
+               moveEntity(event.key.code, rabbit, {sf::Keyboard::A, sf::Keyboard::W, sf::Keyboard::D, sf::Keyboard::S});
             }
         }
 
