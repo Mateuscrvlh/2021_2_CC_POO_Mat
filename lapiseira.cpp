@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 class Grafite{
     public: float calibre {0};
@@ -9,11 +10,12 @@ class Grafite{
     public: Grafite(float calibre = 0.0, std::string dureza = "null", int tamanho = 0) :
         calibre {calibre}, dureza {dureza}, tamanho {tamanho} {
     }
-    //funcao que eu nn sei oq eh
-    //public: std::string toString(){
-    //    return "Grafite" + this->calibre + this->dureza + this->tamanho;
-    //};
-    //funcao  que desgasta o grafite de acordo com 
+
+     friend std::ostream& operator<<(std::ostream& os, const Grafite& g) {
+        os << "[" << g.calibre << ";" << g.dureza << ";" << g.tamanho << "]" << std::endl;
+        return os;
+    } 
+
     public: int desgastePorFolha() {
         if (dureza == "HB"){
             return 1;
@@ -33,89 +35,143 @@ class Grafite{
 
 class Lapiseira {
     public: float calibre {0};
-    public: Grafite grafite;
+    public: std::vector<Grafite> grafites;
+    public: int capc_max {0};
 
     public: Lapiseira(float calibre) :
         calibre {calibre} {
     }
-    //funcao que eu nn sei oq eh
-    //public: std::string toString();
-    //funcao que insere o grafite de acordo com oq for chamado
-    public: bool inserir(Grafite grafite) {
-        if (this->grafite.dureza == "null") {
-            if(this->calibre != grafite.calibre){
-                std::cout << "Calibre imcompativel" << std::endl;
+
+    friend std::ostream &operator<<(std::ostream &os, const Lapiseira *lapiseira)
+    {
+        os << "Calibre: " << lapiseira->calibre << std::endl;
+
+        for ( int i { 0 }; i < (lapiseira->capc_max); i++) {
+            if (lapiseira->grafites[i].dureza == "null") {
+                os << "Grafite: " << lapiseira->grafites[i].dureza << "\n";
             } else {
-                this->grafite = grafite;
+                os << "Grafite: [" << lapiseira->grafites[i].calibre << ":" << lapiseira->grafites[i].dureza << ":" << lapiseira->grafites[i].tamanho << "]" << std::endl;
             }
-            return true;
+        }
+        return os;
+    }
+
+    public: bool inserir(Grafite& grafite) {
+        for ( int i { 0 }; i < (this->capc_max); i++) {
+            if (this->grafites[i].dureza == "null") {
+                if ((float)this->calibre != grafite.calibre) {
+                    std::cout << "calibre incompativel" << std::endl;
+                } else {
+                    this->grafites[i] = grafite;
+                }
+                return true;
+            }
         }
         return false;
     }
-    //funcao que remove o grafite
-    public: Grafite remover() {
-        Grafite aux {this->grafite};
-        this->grafite = *new Grafite();
-        return aux;
-    }
-    //funcao que escreve e desgasta o grafite
-    public: void write(int folhas) {
-        int desgaste = this->grafite.desgastePorFolha();
 
-        for (int i {0}; i != folhas; i++) {
-            if(this->grafite.tamanho - desgaste > 0){
-                this->grafite.tamanho -= desgaste;
-            } else if(this->grafite.tamanho - desgaste <= 0){
-                std::cout << "O grafite acabou" << std::endl;
-                this->remover();
+    public: void remover(int qtd_a_remover) {
+        std::vector<Grafite> aux;
+        for ( int i { 0 }; i < qtd_a_remover; i++) 
+                    this->grafites[i].dureza = "null";
+
+        for (int i {0}; i < (this->capc_max) ; i++) {
+            if (this->grafites[i].dureza != "null" )
+                aux.push_back(this->grafites[i]);
+        }
+        
+        for ( int i { 0 }; i < ((this->capc_max) - 1 - qtd_a_remover); i++) {
+            aux.push_back( 0 );           
+        }
+        
+        this->grafites = aux;
+    }
+    
+    public: void write(int folhas) {
+        int cont{0};
+        for ( int i { 0 }; i < (this->capc_max); i++) {
+            if (this->grafites[i].dureza != "null") {
+                while (this->grafites[i].tamanho != 0 && folhas != 0){
+                    int desgaste = this->grafites[i].desgastePorFolha();
+                    if ((this->grafites[i].tamanho - desgaste) > 0) {
+                        this->grafites[i].tamanho -= desgaste;
+                        folhas--;
+                        cont++;
+                    } else if ((this->grafites[i].tamanho - desgaste) == 0) {
+                        cont++;
+                        this->grafites[i].tamanho -= desgaste;
+                        folhas--;
+                        this->remover(1);
+                    } else{
+                        this->remover(1);   
+                    } 
+                }
+                if (folhas == 0){
+                    std::cout << "folhas escritas completas: " << cont << std::endl;
+                    std::cout << "grafite acabou" << std::endl;
+                    break;
+                }
+            } else {
+                std::cout << "folhas escritas completas: " << cont << std::endl;
+                std::cout << "grafite acabou" << std::endl;
                 break;
             }
         }
     }
 };
 
-int main(){
-        Lapiseira lapiseira = *new Lapiseira(0.5f);
-        //calibre: 0.5, grafite: null
-        lapiseira.inserir(*new Grafite(0.7f, "2B", 50));
-        //fail: calibre incompatível
-        lapiseira.inserir(*new Grafite(0.5f, "2B", 50));
-        //calibre: 0.5, grafite: [0.5:2B:50]
+int main()
+{
+    Lapiseira *lapiseira = new Lapiseira{0};
 
-        //case inserindo e removendo
-        lapiseira = *new Lapiseira(0.3f);
-        lapiseira.inserir(*new Grafite(0.3f, "2B", 50));
-        //calibre: 0.3, grafite: [0.3:2B:50]
-        lapiseira.inserir(*new Grafite(0.3f, "4B", 70));
-        //fail: ja existe grafite
-        //calibre: 0.3, grafite: [0.3:2B:50]
-        lapiseira.remover();
-        lapiseira.inserir(*new Grafite(0.3f, "4B", 70));
-        //calibre: 0.3, grafite: [0.3:4B:70]
+    while (true)
+    {
+        std::string cmd{""};
+        std::string line{""};
+        std::stringstream ss;
 
-        //case escrevendo 1
-        lapiseira = *new Lapiseira(0.9f);
-        lapiseira.inserir(*new Grafite(0.9f, "4B", 4));
-        lapiseira.write(1);
-        //warning: grafite acabou
-        //calibre: 0.9, grafite: null
-        lapiseira.inserir(*new Grafite(0.9f, "4B", 30));
-        lapiseira.write(6);
-        //calibre: 0.9, grafite: [0.9:4B:6]
-        lapiseira.write(3);
-        //fail: folhas escritas completas: 1
-        //warning: grafite acabou
-        //calibre: 0.9, grafite: null
+        std::cin >> cmd;
 
-        //case escrevendo 2
-        lapiseira = *new Lapiseira(0.9f);
-        lapiseira.inserir(*new Grafite(0.9f, "2B", 15));
-        //calibre: 0.9, grafite: [0.9:2B:15]
-        lapiseira.write(4);
-        //calibre: 0.9, grafite: [0.9:2B:7]
-        lapiseira.write(4);
-        //fail: folhas escritas completas: 3
-        //warning: grafite acabou
-        //calibre: 0.9, grafite: null
+        getline(std::cin, line);
 
+        ss << line;
+        if (cmd == "init") {
+            if (lapiseira->calibre == 0) {
+            ss >> lapiseira->calibre;
+            std::cout << "Quantos grafites a lapiseira suporta?\n";
+            std::cin >> lapiseira->capc_max;
+            for (int i {0}; i < (lapiseira->capc_max); i++)
+                lapiseira->grafites.push_back(0);
+            }
+            else {
+                std::cout << "lapiseira ja existe" << std::endl;
+            }
+        } else if (cmd == "show") {
+            std::cout << (lapiseira);
+        } else if (cmd == "inserir") {
+            Grafite grafaux {};
+            ss >> grafaux.calibre >> grafaux.dureza >> grafaux.tamanho;
+            if (!(lapiseira->inserir(grafaux))) {
+                std::cout << "lapiseira cheia" << std::endl;
+            }
+        } else if (cmd == "remover") {
+            std::cout << "remover quantos grafites?" << std::endl;
+            int aux {0};
+            std::cin >> aux;
+            if (aux > lapiseira->capc_max) {
+                std::cout << "A capacidade maxima de grafites eh menor que a inserida" << std::endl;
+            } else {
+                lapiseira->remover(aux);
+            }
+        } else if (cmd == "write") {
+            int aux {0};
+            ss >> aux;
+            lapiseira->write(aux);
+        } else if (cmd == "end") {
+            break;
+        } else {
+            std::cout << "comando invalido" << std::endl;
+        }
+    }
+    return 0;
 }
